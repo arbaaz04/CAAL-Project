@@ -50,15 +50,21 @@ This project was developed as part of the course "Computer Architecture and Asse
 ### Directory Structure
 ```
 .
-├── fft_rv32i_1024.s      # Main FFT implementation
-├── twiddle_real.s        # Real part of twiddle factors
-├── twiddle_imag.s        # Imaginary part of twiddle factors
-├── build.sh             # Build script
-├── linker.ld            # Linker script
-├── README.md            # This file
-├── fft_python_implement.py # Python reference implementation
-├── generate_twiddle.py  # Twiddle factor generation script
-└── Requirements         # Additional documentation
+├── RV32i Assembly Code
+│   ├── fft_rv32i_1024.s      # Main FFT implementation
+│   ├── twiddle_real.s        # Real part of twiddle factors
+│   ├── twiddle_imag.s        # Imaginary part of twiddle factors
+│   ├── build.sh             # Build script
+│   ├── linker.ld            # Linker script
+├── Python Code
+│   ├── fft_python_implement.py # Python reference implementation
+│   ├── generate_twiddle.py  # Twiddle factor generation script
+│   ├── fft_results.txt      # FFT results for verification
+│   ├── Figure_1.png         # Visualization of FFT results
+├── Requirements
+│   ├── 1D FFT Documentation.pdf # Detailed documentation
+│   ├── Project Deliverables.pdf # Summary of project deliverables
+├── README.md                # This file
 ```
 
 ## Building the Project
@@ -137,11 +143,13 @@ The build process will:
 
 ## Additional Resources
 
-### Python Reference Files
-The following Python scripts are included for reference and testing purposes:
+### Python Code
+The following Python scripts and resources are included for reference and testing purposes:
 
 1. `fft_python_implement.py`: A Python implementation of the 1D FFT algorithm for verification and comparison with the assembly implementation.
 2. `generate_twiddle.py`: A script to generate twiddle factor tables for the FFT algorithm.
+3. `fft_results.txt`: Contains the results of the FFT computation for verification purposes.
+4. `Figure_1.png`: A visualization of the FFT results.
 
 ### Documentation
 The `Requirements` folder contains the following documents:
@@ -149,27 +157,15 @@ The `Requirements` folder contains the following documents:
 1. `1D FFT Documentation.pdf`: Detailed documentation on the 1D FFT algorithm and its implementation.
 2. `Project Deliverables.pdf`: A summary of the project deliverables and requirements.
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
-
 ## Acknowledgments
 
 - Dr. Salman Zaffar (Course Instructor)
 - Abdul Wasay Imran (Course Teacher Assistant)
-- VeeR RISC-V Core Team
 - RISC-V Foundation
-- Open Source Community
 
 ## References
-
-1. VeeR Core Documentation
-2. 1D FFT Documentation Guide by Dr. Salman Zaffar and Abdul Wasay Imran
-3. RISC-V Specification
-4. FFT Algorithm References
+1. 1D FFT Documentation Guide by Dr. Salman Zaffar and Abdul Wasay Imran
+2. RISC-V Assembly Language Programming
+2. FFT Algorithm References
    - Cooley-Tukey FFT Algorithm
    - Fixed-point FFT Implementation
