@@ -6,10 +6,10 @@ This project implements a 1024-point 1-Dimentional Fast Fourier Transform (1D FF
 This project was developed as part of the course "Computer Architecture and Assembly Language" (CAAL) taught to sophomore year students pursuing Bachelor's in Computer Science at the Institute of Business Administration (IBA), Karachi. The course is instructed by Dr. Salman Zaffar.
 
 ## Group Members
-- Arbaaz Murtaza
-- Muhammad Hussain
-- Piranchal Ghai
-- Zarmeen Rehman
+- Arbaaz Murtaza (ERP: 29052)
+- Muhammad Hussain (ERP: 28985)
+- Piranchal Ghai (ERP: 29050)
+- Zarmeen Rehman (ERP: 29011)
 
 ## Project Overview
 
