@@ -55,7 +55,10 @@ This project was developed as part of the course "Computer Architecture and Asse
 ├── twiddle_imag.s        # Imaginary part of twiddle factors
 ├── build.sh             # Build script
 ├── linker.ld            # Linker script
-└── README.md            # This file
+├── README.md            # This file
+├── fft_python_implement.py # Python reference implementation
+├── generate_twiddle.py  # Twiddle factor generation script
+└── Requirements         # Additional documentation
 ```
 
 ## Building the Project
@@ -132,6 +135,20 @@ The build process will:
    - `build.sh`: Compilation and linking
    - `linker.ld`: Memory layout configuration
 
+## Additional Resources
+
+### Python Reference Files
+The following Python scripts are included for reference and testing purposes:
+
+1. `fft_python_implement.py`: A Python implementation of the 1D FFT algorithm for verification and comparison with the assembly implementation.
+2. `generate_twiddle.py`: A script to generate twiddle factor tables for the FFT algorithm.
+
+### Documentation
+The `Requirements` folder contains the following documents:
+
+1. `1D FFT Documentation.pdf`: Detailed documentation on the 1D FFT algorithm and its implementation.
+2. `Project Deliverables.pdf`: A summary of the project deliverables and requirements.
+
 ## Contributing
 
 1. Fork the repository
@@ -155,4 +172,4 @@ The build process will:
 3. RISC-V Specification
 4. FFT Algorithm References
    - Cooley-Tukey FFT Algorithm
-   - Fixed-point FFT Implementation 
+   - Fixed-point FFT Implementation
