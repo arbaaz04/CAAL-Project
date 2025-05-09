@@ -1,4 +1,4 @@
-# RV32I FFT Implementation for VeeR Core
+# RV32I 1D FFT Implementation for VeeR Simulator
 
 This project implements a 1024-point 1-Dimentional Fast Fourier Transform (1D FFT) in RISC-V assembly language, specifically designed for the VeeR RISC-V core. The implementation uses fixed-point arithmetic in Q16.16 format for efficient computation.
 
