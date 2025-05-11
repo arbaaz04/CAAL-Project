@@ -243,34 +243,34 @@ cos_normalized:
     
 cos_compute:
     # x² in Q16.16
-    mul t0, a0, a0          # t0 = x²
-    srai t0, t0, 16         # Adjust fixed-point
+    mulh t0, a0, a0         # t0 = high 32 bits of x²
+    slli t0, t0, 16         # Adjust fixed-point
     
     # First term: 1
     li t1, 65536            # t1 = 1.0 in Q16.16
     
     # Second term: -x²/2
     li t2, 32768            # t2 = 0.5 in Q16.16
-    mul t3, t0, t2          # t3 = x²/2
-    srai t3, t3, 16         # Adjust fixed-point
+    mulh t3, t0, t2         # t3 = high 32 bits of x²/2
+    slli t3, t3, 16         # Adjust fixed-point
     sub t1, t1, t3          # result = 1 - x²/2
     
     # Third term: x⁴/24
-    mul t3, t0, t0          # t3 = x⁴
-    srai t3, t3, 16         # Adjust fixed-point
+    mulh t3, t0, t0         # t3 = high 32 bits of x⁴
+    slli t3, t3, 16         # Adjust fixed-point
     li t2, 2731             # t2 = 1/24 in Q16.16
-    mul t3, t3, t2          # t3 = x⁴/24
-    srai t3, t3, 16         # Adjust fixed-point
+    mulh t3, t3, t2         # t3 = high 32 bits of x⁴/24
+    slli t3, t3, 16         # Adjust fixed-point
     add t1, t1, t3          # result = 1 - x²/2 + x⁴/24
     
     # Fourth term: -x⁶/720
-    mul t3, t0, t0          # t3 = x⁴
-    srai t3, t3, 16         # Adjust fixed-point
-    mul t3, t3, t0          # t3 = x⁶
-    srai t3, t3, 16         # Adjust fixed-point
+    mulh t3, t0, t0         # t3 = high 32 bits of x⁴
+    slli t3, t3, 16         # Adjust fixed-point
+    mulh t3, t3, t0         # t3 = high 32 bits of x⁶
+    slli t3, t3, 16         # Adjust fixed-point
     li t2, 91               # t2 = 1/720 in Q16.16
-    mul t3, t3, t2          # t3 = x⁶/720
-    srai t3, t3, 16         # Adjust fixed-point
+    mulh t3, t3, t2         # t3 = high 32 bits of x⁶/720
+    slli t3, t3, 16         # Adjust fixed-point
     sub t1, t1, t3          # result = 1 - x²/2 + x⁴/24 - x⁶/720
     
     # Return result
@@ -430,10 +430,11 @@ butterfly_loop:
     add a2, s2, t5          # a2 = &output_real[odd_idx]
     add a3, s3, t5          # a3 = &output_imag[odd_idx]
     
-    la t7, twiddle_real     # Twiddle factor arrays
-    la t8, twiddle_imag
-    add a4, t7, t6          # a4 = &twiddle_real[tfidx]
-    add a5, t8, t6          # a5 = &twiddle_imag[tfidx]
+    # Use a6 and a7 instead of t7, t8
+    la a6, twiddle_real     # Twiddle factor arrays
+    la a7, twiddle_imag
+    add a4, a6, t6          # a4 = &twiddle_real[tfidx]
+    add a5, a7, t6          # a5 = &twiddle_imag[tfidx]
     
     # Call butterfly function
     jal ra, butterfly
@@ -474,6 +475,18 @@ stage_done:
 # a4 = address of twiddle factor (real part)
 # a5 = address of twiddle factor (imag part)
 butterfly:
+    # Save registers according to RISC-V calling convention
+    addi sp, sp, -36
+    sw ra, 0(sp)
+    sw s0, 4(sp)
+    sw s1, 8(sp)
+    sw s2, 12(sp)
+    sw s3, 16(sp)
+    sw s4, 20(sp)
+    sw s5, 24(sp)
+    sw s6, 28(sp)
+    sw s7, 32(sp)
+    
     # Load values
     lw t0, 0(a0)            # t0 = even.real
     lw t1, 0(a1)            # t1 = even.imag
@@ -484,38 +497,62 @@ butterfly:
     
     # Complex multiply: odd * twiddle
     # (a+bi)(c+di) = (ac-bd) + (ad+bc)i
-    mul t6, t2, t4          # t6 = odd.real * twiddle.real
-    srai t6, t6, 16         # Fixed-point adjustment
     
-    mul t7, t3, t5          # t7 = odd.imag * twiddle.imag
-    srai t7, t7, 16         # Fixed-point adjustment
+    # Proper Q16.16 multiplication using mulh
+    # mulh returns high 32 bits of signed 64-bit product
+    mulh t6, t2, t4         # t6 = high 32 bits of (odd.real * twiddle.real)
+    slli t6, t6, 16         # Shift to align with Q16.16 format
     
-    mul t8, t2, t5          # t8 = odd.real * twiddle.imag
-    srai t8, t8, 16         # Fixed-point adjustment
+    # Use a6 instead of invalid t7
+    mulh a6, t3, t5         # a6 = high 32 bits of (odd.imag * twiddle.imag)
+    slli a6, a6, 16         # Shift to align with Q16.16 format
     
-    mul t9, t3, t4          # t9 = odd.imag * twiddle.real
-    srai t9, t9, 16         # Fixed-point adjustment
+    # Use saved registers s0, s1 temporarily
+    mulh s0, t2, t5         # s0 = high 32 bits of (odd.real * twiddle.imag)
+    slli s0, s0, 16         # Shift to align with Q16.16 format
+    
+    mulh s1, t3, t4         # s1 = high 32 bits of (odd.imag * twiddle.real)
+    slli s1, s1, 16         # Shift to align with Q16.16 format
     
     # Real and imaginary parts of product
-    sub s7, t6, t7          # s7 = prod.real = (odd.real*twiddle.real - odd.imag*twiddle.imag)
-    add s8, t8, t9          # s8 = prod.imag = (odd.real*twiddle.imag + odd.imag*twiddle.real)
+    sub s2, t6, a6          # s2 = prod.real = (odd.real*twiddle.real - odd.imag*twiddle.imag)
+    add s3, s0, s1          # s3 = prod.imag = (odd.real*twiddle.imag + odd.imag*twiddle.real)
     
     # Butterfly outputs
-    add s9, t0, s7          # s9 = out_even.real = even.real + prod.real
-    add s10, t1, s8         # s10 = out_even.imag = even.imag + prod.imag
-    sub s11, t0, s7         # s11 = out_odd.real = even.real - prod.real
-    sub a7, t1, s8          # a7 = out_odd.imag = even.imag - prod.imag
+    add s4, t0, s2          # s4 = out_even.real = even.real + prod.real
+    add s5, t1, s3          # s5 = out_even.imag = even.imag + prod.imag
+    sub s6, t0, s2          # s6 = out_odd.real = even.real - prod.real
+    sub s7, t1, s3          # s7 = out_odd.imag = even.imag - prod.imag
     
     # Store results
-    sw s9, 0(a0)            # store out_even.real
-    sw s10, 0(a1)           # store out_even.imag
-    sw s11, 0(a2)           # store out_odd.real
-    sw a7, 0(a3)            # store out_odd.imag
+    sw s4, 0(a0)            # store out_even.real
+    sw s5, 0(a1)            # store out_even.imag
+    sw s6, 0(a2)            # store out_odd.real
+    sw s7, 0(a3)            # store out_odd.imag
+    
+    # Restore registers
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    lw s3, 16(sp)
+    lw s4, 20(sp)
+    lw s5, 24(sp)
+    lw s6, 28(sp)
+    lw s7, 32(sp)
+    addi sp, sp, 36
     
     ret
 
 # Store FFT results to memory-mapped I/O region
 store_results:
+    # Save registers we'll be using
+    addi sp, sp, -16
+    sw ra, 0(sp)
+    sw s0, 4(sp)
+    sw s1, 8(sp)
+    sw s2, 12(sp)
+    
     li t0, MMIO_RESULT      # Base address for result buffer
     
     # Store start marker
@@ -544,20 +581,22 @@ store_loop:
     # Get current result
     slli t5, t3, 2          # t5 = i * 4 (byte offset)
     add t6, t1, t5          # t6 = &output_real[i]
-    add t7, t2, t5          # t7 = &output_imag[i]
-    lw t8, 0(t6)            # t8 = output_real[i]
-    lw t9, 0(t7)            # t9 = output_imag[i]
+    
+    # Use s0, s1, s2 instead of t7, t8, t9
+    add s0, t2, t5          # s0 = &output_imag[i]
+    lw s1, 0(t6)            # s1 = output_real[i]
+    lw s2, 0(s0)            # s2 = output_imag[i]
     
     # Store index
     sw t3, 0(t0)            # Store index
     addi t0, t0, 4
     
     # Store real part
-    sw t8, 0(t0)            # Store real part
+    sw s1, 0(t0)            # Store real part
     addi t0, t0, 4
     
     # Store imaginary part
-    sw t9, 0(t0)            # Store imaginary part
+    sw s2, 0(t0)            # Store imaginary part
     addi t0, t0, 4
     
     # Increment counter and continue
@@ -569,5 +608,12 @@ store_end:
     la t1, result_end_marker
     lw t1, 0(t1)
     sw t1, 0(t0)
+    
+    # Restore registers
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    addi sp, sp, 16
     
     ret 

@@ -2,36 +2,42 @@
 
 # Exit on error
 set -e
+cd "$(dirname "$0")"
 
-# Compiler and linker settings
-RISCV_CC="riscv64-unknown-elf-gcc"
-RISCV_OBJCOPY="riscv64-unknown-elf-objcopy"
-RISCV_OBJDUMP="riscv64-unknown-elf-objdump"
+# Toolchain
+RISCV_CC="riscv32-unknown-elf-gcc"
+RISCV_OBJCOPY="riscv32-unknown-elf-objcopy"
+RISCV_OBJDUMP="riscv32-unknown-elf-objdump"
 
-# Compile flags
-CFLAGS="-march=rv32im -mabi=ilp32 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles"
+# Flags
+CFLAGS="-march=rv32im -mabi=ilp32 -static -mcmodel=medany -nostdlib -nostartfiles -T linker.ld"
 
-# Source files
+# Files
 SRC="fft_rv32i_1024.s twiddle_real.s twiddle_imag.s"
-
-# Output files
 OUTPUT="fft_rv32i_1024"
 HEX="${OUTPUT}.hex"
+VEER_HEX="${OUTPUT}_veer.hex"
 DUMP="${OUTPUT}.dump"
+BIN="${OUTPUT}.bin"
 
 echo "Building FFT program..."
 
 # Compile and link
 $RISCV_CC $CFLAGS -o $OUTPUT $SRC
 
-# Generate hex file for simulation
+# Generate standard hex file
 $RISCV_OBJCOPY -O verilog $OUTPUT $HEX
 
-# Generate disassembly for reference
+# Generate VeeR-ISS compatible hex (reversed byte order)
+$RISCV_OBJCOPY -O binary $OUTPUT $BIN  # Convert to raw binary
+$RISCV_OBJCOPY -I binary -O verilog --reverse-bytes=4 $BIN $VEER_HEX  # Proper 32-bit word reversal
+
+# Disassembly
 $RISCV_OBJDUMP -D $OUTPUT > $DUMP
 
 echo "Build complete!"
 echo "Output files:"
 echo "- Binary: $OUTPUT"
-echo "- Hex file: $HEX"
-echo "- Disassembly: $DUMP" 
+echo "- Standard hex: $HEX"
+echo "- VeeR-ISS hex (reversed): $VEER_HEX"
+echo "- Disassembly: $DUMP"
