@@ -17,9 +17,6 @@ _start:
     sb x5, 0(x3)
     j _finish
 
-# Remove floating-point functions - incompatible with RV32IM
-# Replace with integer-only implementations or remove if unused
-
 # Fixed-point multiplication for Q16.16 format
 fixed_multiply:
     srai    a5, a0, 31
@@ -33,7 +30,7 @@ fixed_multiply:
     slli    a5, a5, 16
     srli    a0, a4, 16
     or      a0, a5, a0
-    ret
+        ret
 
 # Complex multiplication with Q16.16 values
 fixed_complex_multiply:
@@ -108,10 +105,10 @@ bit_reverse:
     srai    a5, a5, 1
     addi    a4, a4, 1
     bne     a1, a4, .L16
-    ret
+        ret
 .L17:
     li      a0, 0
-    ret
+        ret
 
 # Print a string to STDOUT (VEER ISS compatible)
 print_string:
@@ -220,7 +217,7 @@ fft_fixed_point:
     srai    a5, a5, 1
     bgt     a5, a4, .L21
     lw      a0, 12(sp)
-    call    generate_twiddle_factors
+        call    generate_twiddle_factors
     sw      a0, 20(sp)
     # Store the address of twiddle_imag
     la      a0, twiddle_imag
@@ -230,7 +227,7 @@ fft_fixed_point:
 .L25:
     mv      a1, s3
     mv      a0, s0
-    call    bit_reverse
+        call    bit_reverse
     slli    a5, a0, 2
     lw      a3, 0(s1)
     add     a4, s9, a5
@@ -248,7 +245,7 @@ fft_fixed_point:
     sw      a5, 44(sp)
     li      a5, 1
     sw      a5, 36(sp)
-    j       .L31
+        j       .L31
 .L20:
     # Size not power of 2, print error and exit
     la      a0, msg_size_error
@@ -257,7 +254,7 @@ fft_fixed_point:
 .L44:
     lw      s0, 12(sp)
     mv      a0, s0
-    call    generate_twiddle_factors
+        call    generate_twiddle_factors
     sw      a0, 20(sp)
     # Store the address of twiddle_imag
     la      a0, twiddle_imag
@@ -279,10 +276,10 @@ fft_fixed_point:
     lw      s10, 80(sp)
     lw      s11, 76(sp)
     addi    sp, sp, 128
-    jr      ra
+        jr      ra
 .L45:
     lw      s3, 40(sp)
-    j       .L32
+        j       .L32
 .L28:
     lw      a5, 16(sp)
     div     a5, s4, a5
@@ -302,7 +299,7 @@ fft_fixed_point:
     lw      a2, 0(t0)  # Load real part from twiddle_real
     lw      a1, 0(s5)
     lw      a0, 0(s6)
-    call    fixed_complex_multiply
+        call    fixed_complex_multiply
     sw      a0, 56(sp)
     sw      a1, 60(sp)
     add     a3, a0, s2
@@ -334,7 +331,7 @@ fft_fixed_point:
     li      s4, 0
     lw      a5, 28(sp)
     bgt     a5, zero, .L28
-    j       .L30
+        j       .L30
 .L26:
     lw      a5, 36(sp)
     addi    a5, a5, 1
@@ -356,7 +353,7 @@ fft_fixed_point:
     slli    s11, a5, 2
     lw      a5, 40(sp)
     sw      a5, 24(sp)
-    j       .L27
+        j       .L27
 
 # Test function to generate input and run FFT
 test_1024point_fixed:
@@ -413,7 +410,15 @@ test_1024point_fixed:
     li      a2, 1024
     la      a3, output_real
     la      a4, output_imag
-    call    fft_fixed_point
+        call    fft_fixed_point
+    
+    # Add detection pattern as in the working Vectorized.s file
+    addi sp, sp, -4
+    sw a0, 0(sp)
+
+    li t0, 0x123       # Pattern for help in python script
+    li t0, 0x456       # Pattern for help in python script
+    mv a1, a1          # moving size to get it from log 
     
     # Print results header
     la      a0, msg_results
@@ -447,6 +452,13 @@ test_1024point_fixed:
     la      a0, msg_complete
     call    print_string
     
+    # Add the second detection pattern as in working file
+    li t0, 0x123       # Pattern for help in python script
+    li t0, 0x456       # Pattern for help in python script
+	
+    lw a0, 0(sp)
+    addi sp, sp, 4
+
     lw      ra, 44(sp)
     lw      s0, 40(sp)
     lw      s1, 36(sp)
