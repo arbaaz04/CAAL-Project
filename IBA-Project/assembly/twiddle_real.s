@@ -1,7 +1,7 @@
 # Twiddle factor table (real part) for 1024-point FFT
 # Generated with generate_twiddle.py
 # Using Q16.16 fixed-point format
-.section .data
+.section .rodata
 .align 4
 twiddle_real:
     .word  65536  # W_1024^0: cos(2π*0/1024) = 1.000000

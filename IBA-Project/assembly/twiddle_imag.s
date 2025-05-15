@@ -1,7 +1,7 @@
 # Twiddle factor table (imaginary part) for 1024-point FFT
 # Generated with generate_twiddle.py
 # Using Q16.16 fixed-point format
-.section .data
+.section .rodata
 .align 4
 twiddle_imag:
     .word      0  # W_1024^0: -sin(2π*0/1024) = -0.000000

@@ -1,3 +1,4 @@
+#ROUGH WORK
 # RV32IM Implementation of 1024-point FFT for VeeR/SweRV Simulator
 # Fixed-point format: Q16.16 (16 integer bits, 16 fractional bits)
 # FRAC_BITS = 16, SCALE = 2^16 = 65536
@@ -34,13 +35,13 @@ input_mode:
 # Result markers - will be written to memory-mapped I/O
 .align 4
 result_start_marker:
-    .word 0xFFFF0000           # Start marker for results
+    .word 0x12345678           # Start marker for results (changed for debugging)
 result_end_marker:
-    .word 0x0000FFFF           # End marker for results
+    .word 0x87654321           # End marker for results (changed for debugging)
 
 # Include twiddle factor tables
-.include "twiddle_real.s"
-.include "twiddle_imag.s"
+.include "./assembly/twiddle_real.s"
+.include "./assembly/twiddle_imag.s"
 
 .section .text
 .global _start
@@ -243,34 +244,34 @@ cos_normalized:
     
 cos_compute:
     # x² in Q16.16
-    mulh t0, a0, a0         # t0 = high 32 bits of x²
-    slli t0, t0, 16         # Adjust fixed-point
+    mul t0, a0, a0         # t0 = x²
+    srai t0, t0, 16         # Adjust fixed-point
     
     # First term: 1
     li t1, 65536            # t1 = 1.0 in Q16.16
     
     # Second term: -x²/2
     li t2, 32768            # t2 = 0.5 in Q16.16
-    mulh t3, t0, t2         # t3 = high 32 bits of x²/2
-    slli t3, t3, 16         # Adjust fixed-point
+    mul t3, t0, t2         # t3 = x²/2
+    srai t3, t3, 16         # Adjust fixed-point
     sub t1, t1, t3          # result = 1 - x²/2
     
     # Third term: x⁴/24
-    mulh t3, t0, t0         # t3 = high 32 bits of x⁴
-    slli t3, t3, 16         # Adjust fixed-point
+    mul t3, t0, t0         # t3 = x⁴
+    srai t3, t3, 16         # Adjust fixed-point
     li t2, 2731             # t2 = 1/24 in Q16.16
-    mulh t3, t3, t2         # t3 = high 32 bits of x⁴/24
-    slli t3, t3, 16         # Adjust fixed-point
+    mul t3, t3, t2         # t3 = x⁴/24
+    srai t3, t3, 16         # Adjust fixed-point
     add t1, t1, t3          # result = 1 - x²/2 + x⁴/24
     
     # Fourth term: -x⁶/720
-    mulh t3, t0, t0         # t3 = high 32 bits of x⁴
-    slli t3, t3, 16         # Adjust fixed-point
-    mulh t3, t3, t0         # t3 = high 32 bits of x⁶
-    slli t3, t3, 16         # Adjust fixed-point
+    mul t3, t0, t0         # t3 = x⁴
+    srai t3, t3, 16         # Adjust fixed-point
+    mul t3, t3, t0         # t3 = x⁶
+    srai t3, t3, 16         # Adjust fixed-point
     li t2, 91               # t2 = 1/720 in Q16.16
-    mulh t3, t3, t2         # t3 = high 32 bits of x⁶/720
-    slli t3, t3, 16         # Adjust fixed-point
+    mul t3, t3, t2         # t3 = x⁶/720
+    srai t3, t3, 16         # Adjust fixed-point
     sub t1, t1, t3          # result = 1 - x²/2 + x⁴/24 - x⁶/720
     
     # Return result
@@ -430,8 +431,8 @@ butterfly_loop:
     add a2, s2, t5          # a2 = &output_real[odd_idx]
     add a3, s3, t5          # a3 = &output_imag[odd_idx]
     
-    # Use a6 and a7 instead of t7, t8
-    la a6, twiddle_real     # Twiddle factor arrays
+    # Load twiddle factor arrays
+    la a6, twiddle_real
     la a7, twiddle_imag
     add a4, a6, t6          # a4 = &twiddle_real[tfidx]
     add a5, a7, t6          # a5 = &twiddle_imag[tfidx]
@@ -498,21 +499,19 @@ butterfly:
     # Complex multiply: odd * twiddle
     # (a+bi)(c+di) = (ac-bd) + (ad+bc)i
     
-    # Proper Q16.16 multiplication using mulh
-    # mulh returns high 32 bits of signed 64-bit product
-    mulh t6, t2, t4         # t6 = high 32 bits of (odd.real * twiddle.real)
-    slli t6, t6, 16         # Shift to align with Q16.16 format
+    # Replace mulh with mul + shift
+    mul t6, t2, t4         # t6 = (odd.real * twiddle.real)
+    srai t6, t6, 16         # Shift to align with Q16.16 format
     
-    # Use a6 instead of invalid t7
-    mulh a6, t3, t5         # a6 = high 32 bits of (odd.imag * twiddle.imag)
-    slli a6, a6, 16         # Shift to align with Q16.16 format
+    mul a6, t3, t5         # a6 = (odd.imag * twiddle.imag)
+    srai a6, a6, 16         # Shift to align with Q16.16 format
     
     # Use saved registers s0, s1 temporarily
-    mulh s0, t2, t5         # s0 = high 32 bits of (odd.real * twiddle.imag)
-    slli s0, s0, 16         # Shift to align with Q16.16 format
+    mul s0, t2, t5         # s0 = (odd.real * twiddle.imag)
+    srai s0, s0, 16         # Shift to align with Q16.16 format
     
-    mulh s1, t3, t4         # s1 = high 32 bits of (odd.imag * twiddle.real)
-    slli s1, s1, 16         # Shift to align with Q16.16 format
+    mul s1, t3, t4         # s1 = (odd.imag * twiddle.real)
+    srai s1, s1, 16         # Shift to align with Q16.16 format
     
     # Real and imaginary parts of product
     sub s2, t6, a6          # s2 = prod.real = (odd.real*twiddle.real - odd.imag*twiddle.imag)
