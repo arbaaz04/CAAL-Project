@@ -400,10 +400,6 @@ test_1024point_fixed:
     addi    s4, s4, 1
     bne     s4, s5, .gen_input_loop
     
-    # Print message about FFT computation
-    la      a0, msg_computing_fft
-    call    print_string
-    
     # Run the FFT
     la      a0, input_real
     la      a1, input_imag
@@ -420,42 +416,6 @@ test_1024point_fixed:
     li t0, 0x456       # Pattern for help in python script
     mv a1, a1          # moving size to get it from log 
     
-    # Print results header
-    la      a0, msg_results
-    call    print_string
-    
-    # Print first 8 results
-    la      s0, output_real
-    la      s1, output_imag
-    li      s2, 0           # counter
-    li      s3, 8           # limit
-    
-.print_results_loop:
-    # Print index
-    mv      a0, s2
-    call    print_hex
-    
-    # Print real value
-    lw      a0, 0(s0)
-    call    print_hex
-    
-    # Print imag value
-    lw      a0, 0(s1)
-    call    print_hex
-    
-    addi    s0, s0, 4
-    addi    s1, s1, 4
-    addi    s2, s2, 1
-    bne     s2, s3, .print_results_loop
-    
-    # Print FFT complete message
-    la      a0, msg_complete
-    call    print_string
-    
-    # Add the second detection pattern as in working file
-    li t0, 0x123       # Pattern for help in python script
-    li t0, 0x456       # Pattern for help in python script
-	
     lw a0, 0(sp)
     addi sp, sp, 4
 
