@@ -3,7 +3,6 @@
 # Using Q16.16 fixed-point format
 .section .rodata
 .align 4
-twiddle_imag:
     .word      0  # W_1024^0: -sin(2π*0/1024) = -0.000000
     .word   -402  # W_1024^1: -sin(2π*1/1024) = -0.006136
     .word   -804  # W_1024^2: -sin(2π*2/1024) = -0.012272
