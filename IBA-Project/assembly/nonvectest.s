@@ -3,6 +3,8 @@
 .section .text
 .global _start
 _start:
+        .word 0x00000123     # Marker 1
+    .word 0x00000456     # Marker 2
     # Initialize input buffers (DC signal: real=1.0, imag=0)
     lui a0, %hi(input_real)
     addi a0, a0, %lo(input_real)
@@ -145,7 +147,9 @@ fft_fixed_point:
     li      s10, 0                   # butterfly
 .butterfly_loop:
     # Calculate indices
-    sll     t0, s9, (s5 + 1)         # group * block_size
+ addi t3, s5, 1
+sll t0, s9, t3          # equivalent to sll t0, s9, s5 + 1
+
     add     t0, t0, s10              # even index
     add     t1, t0, s8               # odd index
 
@@ -189,7 +193,9 @@ fft_fixed_point:
     sub     t5, t1, a1               # lower_imag
 
     # Store results
-    sll     t6, s9, (s5 + 1)
+   addi t3, s5, 1
+sll t6, s9, t3          # equivalent to sll t6, s9, s5 + 1
+
     slli    t6, t6, 2                # byte offset
     slli    a0, s8, 2                # half_block offset
 
@@ -273,3 +279,4 @@ input_real:  .space 4096         # 1024 elements (Q16.16)
 input_imag:  .space 4096
 output_real: .space 4096
 output_imag: .space 4096
+
