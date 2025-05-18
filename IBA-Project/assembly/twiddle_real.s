@@ -3,7 +3,7 @@
 # Using Q16.16 fixed-point format
 .section .rodata
 .align 4
-twiddle_real:
+
     .word  65536  # W_1024^0: cos(2π*0/1024) = 1.000000
     .word  65534  # W_1024^1: cos(2π*1/1024) = 0.999981
     .word  65531  # W_1024^2: cos(2π*2/1024) = 0.999925
