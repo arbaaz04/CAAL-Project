@@ -34,26 +34,24 @@ This project was developed as part of the course "Computer Architecture and Asse
 ## Running the Project
 
 ### Vectorized Implementation
-1. Copy the contents of `vectest.s` to `Vectorized.s`:
+1. Copy the contents of `vectest.s` to `Vectorized.s` manually or using the command:
    ```bash
-   cp Assembly/vectest.s Assembly/Vectorized.s
+   cp assembly/vectest.s assembly/Vectorized.s
    ```
 
 2. Run the project using the Makefile:
    ```bash
-   cd IBA-Project
    make allV
    ```
 
 ### Non-Vectorized Implementation
-1. Copy the contents of `nonvectest.s` to `NonVectorized.s`:
+1. Copy the contents of `nonvectest.s` to `NonVectorized.s` manually or using the command:
    ```bash
-   cp Assembly/nonvectest.s Assembly/NonVectorized.s
+   cp assembly/nonvectest.s assembly/NonVectorized.s
    ```
 
 2. Run the project using the Makefile:
    ```bash
-   cd IBA-Project
    make allNV
    ```
 
