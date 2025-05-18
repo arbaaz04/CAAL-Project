@@ -1,4 +1,3 @@
-
 # RV32I 1024-Point FFT Implementation for VeeR-ISS Simulator
 
 This project implements a 1024-point 1-Dimensional Fast Fourier Transform (1D FFT) in RISC-V assembly language, specifically designed for the VeeR-ISS RISC-V simulator. The implementation uses fixed-point arithmetic in Q16.16 format for efficient computation.
@@ -10,12 +9,12 @@ This project was developed as part of the course "Computer Architecture and Asse
 - Arbaaz Murtaza (ERP: 29052)
 - Muhammad Hussain (ERP: 28985)
 - Piranchal Ghai (ERP: 29050)
-- Zarmeen Rehman (ERP: 29011)
+- Zarmeen Rahman (ERP: 29011)
 
 ## Project Overview
 
 ### Features
-- 1024-point FFT implementation
+- 1024-point FFT implementation (both vectorized and non-vectorized versions)
 - Fixed-point arithmetic (Q16.16 format)
 - Support for both real and complex input signals
 - Memory-mapped I/O for result output
@@ -34,11 +33,10 @@ This project was developed as part of the course "Computer Architecture and Asse
 
 ## Running the Project
 
-1. Copy the contents of `c_translation.s` to `Vectorized.s`:
+### Vectorized Implementation
+1. Copy the contents of `vectest.s` to `Vectorized.s`:
    ```bash
-   # Either use a text editor to copy/paste the content
-   # or use a command like:
-   cp IBA-Project/assembly/c_translation.s IBA-Project/assembly/Vectorized.s
+   cp Assembly/vectest.s Assembly/Vectorized.s
    ```
 
 2. Run the project using the Makefile:
@@ -47,10 +45,23 @@ This project was developed as part of the course "Computer Architecture and Asse
    make allV
    ```
 
-3. The VeeR-ISS simulator will execute the FFT implementation and show:
-   - Messages about the FFT computation
-   - Results of the FFT operation in hex format
-   - Completion message
+### Non-Vectorized Implementation
+1. Copy the contents of `nonvectest.s` to `NonVectorized.s`:
+   ```bash
+   cp Assembly/nonvectest.s Assembly/NonVectorized.s
+   ```
+
+2. Run the project using the Makefile:
+   ```bash
+   cd IBA-Project
+   make allNV
+   ```
+
+For both implementations:
+- The VeeR-ISS simulator will execute the FFT implementation and show:
+  - Messages about the FFT computation
+  - Results of the FFT operation in hex format
+  - Completion message
 
 ## Implementation Details
 
@@ -59,6 +70,7 @@ This project was developed as part of the course "Computer Architecture and Asse
 - In-place computation
 - Bit-reversed addressing
 - Fixed-point arithmetic in Q16.16 format
+- Vectorized version uses RISC-V Vector (RVV) extensions
 
 ### Fixed-Point Arithmetic
 The implementation uses Q16.16 fixed-point format with proper handling of multiplication:
@@ -68,7 +80,7 @@ The implementation uses Q16.16 fixed-point format with proper handling of multip
 
 ### Key Components
 
-1. Main FFT Implementation (`Vectorized.s`)
+1. Main FFT Implementation
    - Core FFT computation using butterfly operations
    - Bit-reversal algorithm for proper indexing
    - MMIO for output display
@@ -87,19 +99,19 @@ The implementation uses Q16.16 fixed-point format with proper handling of multip
 ## Code Structure
 
 ### Key Functions
-- `test_1024point_fixed`: Main entry point that sets up the test and displays results
-- `fft_fixed_point`: Core FFT implementation
-- `generate_twiddle_factors`: Returns pointers to pre-computed twiddle factor tables
-- `fixed_complex_multiply`: Performs complex multiplication with Q16.16 values
-- `bit_reverse`: Performs bit-reversal addressing for FFT indexing
+- `_start`: Main entry point that sets up the test and displays results
+- `vector_fft`: Core FFT implementation (vectorized version)
+- `vector_bitrev`: Performs bit-reversal addressing
+- `vector_complex_mul`: Performs complex multiplication with Q16.16 values
+- `printToLogVectorized`: Outputs results via memory-mapped I/O
 
 ### Input Signal
 The implementation uses an impulse input (1.0 at index 0, zero elsewhere) which results in a flat frequency response, ideal for testing FFT correctness.
 
 ## Additional Notes
 
-- The code is fully compatible with VeeR-ISS's RV32IM instruction set (no floating-point)
-- The implementation uses only integer operations for all calculations
+- The vectorized version uses RV32IMV instruction set (with vector extensions)
+- The non-vectorized version uses only RV32IM instruction set
 - Output is displayed in hexadecimal format through memory-mapped I/O
 - The first 8 bins of the FFT results are displayed for verification
 
