@@ -3,7 +3,9 @@
 A 1024-point Fast Fourier Transform implementation in RISC-V assembly using IEEE 754 single-precision floating-point arithmetic, optimized for the VeeR-ISS simulator with RISC-V Vector extensions.
 
 **Course:** Computer Architecture and Assembly Language (CAAL) - IBA Karachi
+
 **Instructor:** Dr. Salman Zaffar
+
 **Group:** Fast and Fourierous (Arbaaz Murtaza, Muhammad Hussain, Piranchal Ghai, Zarmeen Rahman)
 
 ## Features & Specifications
